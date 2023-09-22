@@ -1,0 +1,281 @@
+---
+title: "05_sok_2008_h23_utf1"
+author: "05"
+format: pdf
+editor: visual
+echo: False
+---
+
+# Apendiks - KI
+
+Denne besvarelsen er gjennomført uten bruk av kunstig inteligens.
+
+```{r, warning = FALSE}
+# Clering the environment.
+rm(list=ls())
+
+# Loading packages.
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(rjstat)
+  library(janitor)
+  library(readr)
+  library(eurostat)
+  library(knitr)
+  library(httr)
+  })
+```
+
+```{r}
+# Define custom theme function.
+theme_mood_v1 <- function() {
+  theme_minimal() +
+    theme(
+      plot.background = element_rect(fill = "white", color = NA),
+      plot.margin = unit(c(5, 10, 5, 10), units = "mm"),
+      plot.title = element_text(face = "bold.italic", color = "gray10"),
+      axis.title = element_text(face = "bold", color = "gray10"),
+      axis.text = element_text(color = "gray10"),
+      legend.text = element_text(color = "gray10"),
+      legend.title = element_text(face = "bold", color = "gray10"),
+      panel.grid = element_line(color = "gray80"),
+      axis.text.x = element_text(angle = 70, vjust = 1, hjust = 1)
+    ) }
+```
+
+```{r, message = FALSE}
+# Loading data (SSB Table 04544).
+url_01 <- "https://data.ssb.no/api/v0/no/table/04544/"
+
+query_01 <- '{
+  "query": [
+    {
+      "code": "Kjonn",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "0",
+          "1",
+          "2"
+        ]
+      }
+    },
+    {
+      "code": "Yrkesstatus",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "00",
+          "01",
+          "02",
+          "03"
+        ]
+      }
+    }
+  ],
+  "response": {
+    "format": "json-stat2"
+  }
+}'
+
+# Creating dataframe (SSB Table 04544).
+get_index_01 <- url_01 %>%
+  POST(body = query_01, encode = "json")
+
+df_01 <- get_index_01 %>%
+  content("text") %>%
+  fromJSONstat() %>%
+  as_tibble()
+```
+
+```{r, message = FALSE}
+# Loading data ().
+url_02 <- "https://raw.githubusercontent.com/uit-sok-2008-h23/uit-sok-2008-h23.github.io/main/assets/women.csv"
+
+df_02 <- read_delim(url_02, delim = ";")
+```
+
+```{r, message = FALSE}
+# Loading data (eurostat).
+df_03 <- read.csv("Data/eurostat.csv")
+
+# Selecting the data i need.
+df_03 <- df_03 %>%
+  select(unit, icha11_hf, geo, OBS_VALUE)
+
+# Renaming columns.
+df_03 <- df_03 %>%
+  rename(variable = icha11_hf, value = OBS_VALUE)
+```
+
+# Utfordring 1.1
+
+### Utfordring 1.1.1
+
+I denne oppgaven skal benytte dataen fra SSB sin tabell 04544, for å vise empiriske kjønnsforskjeller i valg av arbeidstimer for norske menn og kvinner. Figur 1.1 viser gjennomsnittlig timer per uke for alle som har status som lønnstakere, mellom årene 1996 til 2022.
+
+```{r}
+# Renaming columns. 
+df_01 <- df_01 %>%
+  rename(sex = kjønn, 
+         status = yrkesstatus,
+         variable = statistikkvariabel,
+         year = år)
+
+# Filtering the variables i need for this assignment.
+df_01 <- df_01 %>%
+  filter(variable == "Faktisk arbeidstid (timer per uke)",
+         status == "Lønnstakere",
+         sex != "Begge kjønn")
+
+# Splitting men and women.
+df_01_men <- df_01 %>%
+  filter(sex == "Menn")
+
+df_01_women <- df_01 %>%
+  filter(sex == "Kvinner")
+```
+
+```{r, warning = FALSE}
+# Creating figure for working hours per week. 
+fig_01 <- ggplot(NULL, aes(x = year, y = value, fill = sex)) +
+  geom_line(data = df_01_men, color = "#FF8000",  group = 1, size = 1) +
+  geom_line(data = df_01_women, color = "#00A19B", group = 1, size = 1) +
+  annotate("text", x = 25, y = 37, label= "Menn", color = "#FF8000") +
+  annotate("text", x = 25, y = 32, label= "Kvinner", color = "#00A19B") +
+  labs(title = "Fig. 1.1: Arbeidstimer per uke fordelt på kjønn", 
+       x = "År", y = "Timer per uke",
+       caption = "Kilde: SSB (04544)") +
+  ylim(25, 45) +
+  theme_mood_v1()
+
+# Showing figure.
+fig_01
+```
+
+Figur 1.1 viser at antall arbeidstimer per uke for menn har gått ned fra 38.7 (1996) til 35.8 (2022), samtidig som antall arbeidstimer per uke for kvinner har gått opp fra 29.9 (1996) til 30.9 (2022). En av grunnene til denne forskjellen blant menn og kvinner er at andelen kvinner som jobber deltid er større enn andelen menn (Gram, 2022). At flere kvinner enn menn jobber deltid resulterer i at gjennomsnittlig arbeidstimer per uke går ned for kvinner. En av forklaringene på at flere kvinner jobber deltid er mindre grad av yrkesspredning, sammenliknet med menn. Over en fjerdedel av alle kvinnelige lønnstakere jobber i de tre mest kvinnedominerte yrkene. Særlig er helse- og omsorgs sektoren kvinnedominert, og her er deltidsarbeid utbredt. Til sammenligning jobber 1 av 10 menn i de tre mest mannsdominerte yrkene (Gram, 2022). Det er dermed ikke gitt at alle ønsker å jobbe heltid, noen velger jobbe deltid.
+
+Hvor mange arbeidstimer per uke et individ (uavhengig av kjønn) ønsker eller velger å jobbe avhenger av flere faktorer, som for eksempel timelønn og deres preferanse mellom fritid og inntekt (arbeid). Det vil si at individer tilbyr arbeidskraft for å oppnå en optimal kombinasjon av inntekt (arbeid) og fritid. For eksempel vil et individ ønske så mye fritid som mulig, men for å betale for mat, leie, fritidsaktiviteter, osv. ønsker individet å skaffe seg en inntekt som tillater disse kjøpene. Desto høyere lønn dette individet blir tilbudt, desto dyrere blir det å ha fritid. Individet vil derfor tilpasse antall arbeidstimer i uken (inntekt), mot antall timer fritid i uken. Det vil altså si at preferansen mellom jobb og fritid kan være forskjellige for kvinner og menn, dette er visualisert nedenfor.
+
+![](Data/Arbeidstimer.png)
+
+Vi vet at kvinner tjente dårlige enn menn før, og det er fortsatt en forskjell i inntekt. I 2022 hadde menn en gjennomsnittlig månedslønn på 56 250 kr og kvinner 49 280 kr (SSB, 2023). Ut ifra teorien som ble beskrevet i forrige avsnitt vil dette antyde at det er noe billigere for kvinner å velge mer fritid enn for menn, kvinner har mindre insentiver (lavere lønn) for å arbeide mer.
+
+En annen viktig faktor i valget av antall arbeidstimer per uke er at før i tiden var det vanligere at kvinner ble hjemme å gjorde husarbeid, barnepass, lage mat, osv. mens mannen var på jobb og tjente penger for å forsørge familien. Dette gjorde at andelen kvinner i arbeidsstyrken var mye lavere enn andelen menn. I 1996 var dette allerede på vei til å endre seg, men bare 65.8 prosent av kvinner var en del av arbeidsstyrken, og 76.6 prosent av menn. I 2022 var dette enda nærmere med henholdsvis 69.5 prosent kvinner og 75.6 prosent menn (SSB, 2023).
+
+### Utfordring 1.1.2
+
+I denne oppgaven skal dataen (hentet fra oppgave) som inneholder informasjon om generøsiteten av foreldrepermisjonsordninger og mødres yrkesdeltakelse i 24 OECD land i 2021, benyttes til å konstruere to figurer, og med utgangspunkt i disse og økonomisk teori diskutere følgende påstand: «Gunstige permisjonsordninger ved fødsel sikrer høy yrkesdeltakelse blant kvinner på lang sikt».
+
+```{r, message = FALSE, warning = FALSE}
+# Creating figure for children 0-2 years old. 
+fig_02 <- ggplot(data = df_02, aes(x = tot_full_rate, y = fem_emp_rate_0_2)) +
+  geom_point(color = "#2173B8") +
+  geom_smooth(method = lm, se = FALSE, color = "#FF8000") +
+  annotate("text", x = 55.4, y = 76.5, label = "SLO", size = 3) +
+  annotate("text", x = 54.5, y = 21, label = "CZ", size = 3) +
+  labs(title = "Fig. 1.2: Sysselsetting blant kvinner med barn 0-2 år",
+       x = "Uker med 100% støtte",
+       y = "Yrkesdeltakelse") +
+  theme_mood_v1() +
+  theme(axis.text.x = element_text(angle = 0))
+
+# Showing figure. 
+fig_02
+```
+
+Figur 1.2 viser yrkesdeltakelsen blant kvinner med barn mellom 0-2 år og generøsitet av foreldrepermisjonsordninger (uker med 100% støtte) blant 24 OECD land i 2021, samt en lineær trend linje som viser sammenhengen mellom disse to faktorene. Dataen viser at sysselsettingen blant kvinner med barn mellom 0-2 år har en avtagende trend, altså at mer generøse foreldrepermisjonsordninger fører til at færre kvinner er i jobb. Men vi observerer også at to land (SLO og CZ) som har relativ lik generøsitet i sine foreldrepermisjonsordninger har svært ulik yrkesdeltakelse blant kvinner, hvilke grunner som fører til dette vil ikke bli besvart i denne oppgaven, men det tyder på at det kan være flere faktorer enn det vi observerer som påvirker.
+
+```{r, message = FALSE, warning = FALSE}
+# Creating figure for children 6-14 years old.
+fig_03 <- ggplot(data = df_02, aes(x = tot_full_rate, y = fem_emp_rate_6_14)) + 
+  geom_point(color = "#2173B8") +
+  geom_smooth(method = lm, se = FALSE, color = "#FF8000") +
+  labs(title = "Fig. 1.3: Sysselsetting blant kvinner med barn 6-14 år",
+       x = "Uker med 100% støtte",
+       y = "Yrkesdeltakelse") +
+  theme_mood_v1() +
+  theme(axis.text.x = element_text(angle = 0))
+
+# Showing figure
+fig_03
+```
+
+Figur 1.3 viser yrkesdeltakelse blant kvinner med barn mellom 6-14 år og generøsitet av foreldrepermisjonsordninger (uker med 100% støtte) blant 24 OECD land i 2021, samt en lineær trend linje som viser sammenhengen mellom disse to faktorene. Dataen viser at sysselsettingen blant kvinner med barn mellom 6 -- 14 år har en økende trend, altså at mer generøse foreldrepermisjonsordninger fører til at flere kvinner er i jobb.
+
+Hvordan et individ (en mor) velger å tilpasse seg mellom antall timer hjemme med barnet og antall timer på jobb er det flere faktorer som spiller inn på. Når kvinner har barn mellom 0-2 år tyder dataen på at mer generøse foreldrepermisjon fører til lavere yrkesdeltakelse. Dette kan tyde på at kvinner i landene med generøse foreldrepermisjoner har muligheten (inntekt) til å jobbe mindre for å være med og ta vare på barnet. Mens landene med mindre generøse foreldrepermisjoner ikke har muligheten (inntekt) til å være borte fra jobb. Men når barnet blir eldre mellom 6-14 år snur denne trenden, da er det kvinnene med gunstige permisjonsordninger som har høyere yrkesdeltakelse.
+
+En mulig forklaring på dette er at barnas behov til tilsyn og omsorg reduseres når de blir eldre. I land med gunstige permisjonsordninger kan det utvikles seg en positiv innvirkning på barnets uavhengighet, noe som resulterer i at de trenger mindre tilsyn, og kvinner kan jobbe mer. En annen viktig faktor innenfor dette er tilgjengelighet på barnehage/SFO. Dersom et land har gratis/billig barnehage vil dette føre til at kvinner har muligheten til å jobbe mer, og vice versa i land med dyr barnehage, må kvinner velge mellom å betale dyr barnehage og jobber mer, eller å bli hjemmeværende.
+
+For å kunne trekke noen konklusjoner trengs det mere data for å se sammenhengen mellom gunstige permisjonsordninger og kvinners sysselsetting, det er sannsynligvis flere faktorer som spiller inn.   
+
+### Utfordring 1.1.3
+
+Som flere land i verden har Norge en aldrende befolkning som er avhengig av velferdssystemet. En økende andel av eldre i befolkningen betyr færre arbeidsaktive personer i forhold til pensjonister. Dette kan legge press på velferdssystemet til Norge i form av at det blir færre skattebetalere og flere som benytte velferdssystemet, altså lavere inntekt i forhold til økende utgifter. En av løsningene på en aldrende befolkning er høyere antall fødsler, dette fører til at det på lang sikt blir flere arbeidstakere, og større skatteinntekter. Et annet sentralt aspekt er høy yrkesdeltakelse blant kvinner som bidrar til at flere er i jobb, og støtter opp velferdssystemet i form av skatt. Denne økte skatteinntekten kan benyttes til å finansiere velferdstjenester som helsevesen, utdanning og eldreomsorg. Men det er ikke bare skatteinntektene som øker. Høy yrkesdeltakelse blant kvinner fører også til at flere personer (uavhengig av kjønn) er involvert i Norges økonomi, noe som kan føre til økt produktivitet og økonomisk vekst, som igjen bidrar til å finansiere velferdstjenester. En konsekvens av høy yrkesdeltakelsen blant kvinner er at de blir mindre avhengige av velferdsytelser som for eksempel arbeidsledighetstrygd og sosialstøtte. Dette bidrar til å redusere kostnadene knyttet til velferdssystemet, og frigjør midler som kan benyttes andre steder.
+
+# Utfordring 1.2
+
+### Utfordring 1.2.1
+
+I denne oppgaven skal vi benytte datasettet «hlth_sha11_hf» fra Eurostat for år 2019 til å konstruere et punktdiagram som viser sammenhengen mellom andelen av egenbetalinger og helsetjenesteforbruk per innbygger i europeiske land.
+
+```{r}
+# Seperating the HF1 and HF3 variables. 
+df_03_hf1 <- df_03 %>%
+  filter(variable == "HF1")
+
+df_03_hf3 <- df_03 %>%
+  filter(variable == "HF3")
+```
+
+```{r, warning = FALSE, message = FALSE}
+# Creating the figure.
+fig_04 <- ggplot(NULL, aes(x = df_03_hf3$value, y = df_03_hf1$value)) +
+  geom_point(color = "#2173B8") +
+  geom_smooth(method = lm, color = "#FF8000") +
+  labs(title = "Helsjetjenesteforbruk vs egenbetaling", 
+       x = "Andel av egenbetaling", 
+       y = "Helsetjenesteforbruk per innbygger") +
+  theme_mood_v1() +
+  theme(axis.text.x = element_text(angle = 0))
+
+# Showing the figure. 
+fig_04
+
+# Finding the corrolation.
+# cor(x = df_03_hf3$value, y = df_03_hf1$value) # output 0.3004643
+```
+
+Figur 2.1 viser andelen av egenbetalinger og helsetjenesteforbruk per innbygger i utvalgte europeiske land i 2019, samt en lineær trendlinje som viser sammenhengen mellom disse faktorene. Området rundt den lineære trendlinjen viser usikkerheten, altså hvor presis den er.
+
+Vi observerer fra figuren at det er relativt stor usikkerhet knyttet til trendlinjen, noe som tyder på en svak korrelasjon mellom faktorene og at land som har relativt lik andel av egenbetaling, har stor spredning i helsetjenesteforbruk per innbygger. Når vi sjekker korrelasjonen mellom faktorene, får vi ut ca. 0.3004, noe som tilsvarer en veldig svak korrelasjon. Dette tyder på at det er flere faktorer involvert når forbrukere velger å benytte seg av helsetjenester.
+
+### Utfordring 1.2.2
+
+Egenbetalinger betyr at individer må betale mer fra egen lomme, og dermed får mindre dekt i form av «forsikring» fra staten. I teorien ville dette betyd at dersom man øker andelen egenbetaling, ville det blitt dyrere å skade seg (tilkalle helsehjelp), noe som ville ført til at individer blir mer forsiktig med egen helse. Dette vill føre til en reduksjon i etterspørselen etter helsehjelp, visualisert nedenfor.
+
+![](Data/Helsetjenester.png)
+
+På figuren kan vi se etterspørselen etter helsehjelp med punktene M_0 som tilsvarer at staten betaler alt, M_1 som tilsvarer den opprinnelige helseutgiften og M_2 som tilsvarer egenandelen. Det grønne området representerer hele helseutgiften, og det blå området representerer dødevektstapet.
+
+Men vi observerer i dataen fra figur 2.1 at det motsatte skjer, dette tyder på at det er flere faktorer enn egenandel som påvirker etterspørselen etter helsetjenester.
+
+### Utfordring 1.2.3
+
+Økte egenandeler kan bidra til å redusere belastningene på helsetjenester og frigjøre midler til å forbedre kvaliteten på helsetjenester, som følge av synkende etterspørsel. Dette som et resultat av at individer tar sunnere valg knyttet til egen helse. Men dette kan også skape en økonomisk byrde for individer med lav inntekt, som i verste fall kan føre til at man unngår å oppsøke forebyggende eller nødvendig medisinsk behandling.
+
+## Referanseliste
+
+Boeri T. & Van Ours J. (2013). *The Economics of Imperfect Labor Markets: Second Edition.* Princeton University Press.
+
+SSB. (2023, 26. januar). *04544: Sysselsatte i alt og i arbeid (AKU), etter kjønn, yrkesstatus, år og statistikkvariabel.* Statistisk sentralbyrå (SSB). Hentet 12. september 2023 fra <https://www.ssb.no/statbank/table/04544/tableViewLayout1/>
+
+Gram, K.H. (2022, 1. april). *Likestillingsutfordringer i deltidsarbeid og utdanningsnivå*. Statistisk sentralbyrå (SSB). Hentet 20. september 2023 fra <https://www.ssb.no/befolkning/likestilling/statistikk/indikatorer-for-kjonnslikestilling-i-kommunene/artikler/likestillingsutfordringer-i-deltidsarbeid-og-utdanningsniva>
+
+SSB. (2023, 2. februar). *Lønn.* Statistisk sentralbyrå (SSB). Hentet 20. september 2023 fra <https://www.ssb.no/arbeid-og-lonn/lonn-og-arbeidskraftkostnader/statistikk/lonn>
+
+SSB. (2023, 24. august). *Arbeidskraftundersøkelse.* Statistisk sentralbyrå (SSB). Hentet 20. september 2023 fra <https://www.ssb.no/arbeid-og-lonn/sysselsetting/statistikk/arbeidskraftundersokelsen>
+
+SSB. (2006, 18. mai). *Hvor bærekraftig er den nordiske familiepolitiske modellen?* Statistisk sentralbyrå (SSB). Hentet 21. september 2023<https://www.ssb.no/befolkning/artikler-og-publikasjoner/hvor-baerekraftig-er-den-nordiske-familiepolitiske-modellen>
+
+NRK. (2020, 21. september). *Sånn er Norge: 2. Likestilling.* NRK. Hentet 21.09.2023 fra <https://tv.nrk.no/serie/harald-eia-presenterer-saann-er-norge/sesong/2/episode/2/avspiller>
