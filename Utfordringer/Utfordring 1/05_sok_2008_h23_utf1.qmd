@@ -3,7 +3,7 @@ title: "05_sok_2008_h23_utf1"
 author: "05"
 format: pdf
 editor: visual
-echo: False
+echo: FALSE
 ---
 
 # Apendiks - KI

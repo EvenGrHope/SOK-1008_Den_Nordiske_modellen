@@ -1,0 +1,347 @@
+---
+title: "05_sok_h23_2008_utf2"
+author: "05"
+date: last-modified
+date-format: iso
+execute:
+  echo: FALSE
+  warning: FALSE
+format:
+  pdf:
+    fig-pos: "H"
+editor: visual
+---
+
+# Apendiks
+
+Denne besvarelsen er gjennomført uten bruk av kunstig inteligens.
+
+Figurene som visualiserer økonomisk teori (utfordring 2.1.1 og utfordring 2.2.1) er laget ved bruk av Figma (design programvare), fordi figurene ikke inneholder presis data og fungerer som støtte til teorien.
+
+```{r, warning = FALSE}
+# Clering the environment.
+rm(list=ls())
+
+# Loading packages.
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(rjstat)
+  library(janitor)
+  library(readr)
+  library(eurostat)
+  library(knitr)
+  library(httr)
+  library(ggrepel)
+  library(OECD)
+  })
+```
+
+```{r}
+# Define custom theme function.
+theme_mod_v1 <- function() {
+  theme_minimal() +
+    theme(
+      plot.background = element_rect(fill = "white", color = NA),
+      plot.margin = unit(c(5, 10, 5, 10), units = "mm"),
+      plot.title = element_text(face = "bold.italic", color = "gray10"),
+      axis.title = element_text(face = "bold", color = "gray10"),
+      axis.text = element_text(color = "gray10"),
+      legend.text = element_text(color = "gray10"),
+      legend.title = element_text(face = "bold", color = "gray10"),
+      panel.grid = element_line(color = "gray80")
+    ) }
+```
+
+# Utfordring 2.1
+
+### Utfordring 2.1.1
+
+I denne oppgaven skal økonomisk teori og grafisk analyse benyttes til å gi intuisjon til begge disse påstandene: "Minstelønninger fører til mindre fattigdom" og "Minstelønninger fører til økt fattigdom"
+
+Før en kan diskutere påstandene om minstelønn, må en forstå hvordan en minstelønn påvirker sysselsettingen, lønn og effektivitet på et arbeidsmarked, i dette tilfelle en monopsoni bedrift. Monopsoni er en markedsform med en stor dominerende etterspørsel, det motsatte av monopol.
+
+Figur 1 viser lønn ($w$) på y-aksen, sysselsetting på x-aksen ($L$), etterspørsel på arbeidskraft ($L^d (w)$) som også er lik grenseinntektene ($MRP_L$), tilbud på arbeidskraft ($L^s (w)$) og grensekostnaden ($MLC$).
+
+![Monopsonibedrift](Data/Monopsoni%20bedrift.PNG)
+
+Vilkåret for profittmaksimering for en monopsonibedrift er gitt ved at grenseinntektene ($MRP_L$) er lik grensekostnaden ($MLC$), punkt $A$. Dette gir et sysselsettingsnivå som er lik $L^m$ og et lønnsnivå som er lik $w^m$. Under fullkommen konkurranse vil likevekten være i punktet $C$, altså at tilbud er lik etterspørsel, som gir lønnen $w^*$ og sysselsettingen $L^*$. Uten en minstelønn vil monopsoni bedriften ha ett effektivitetstap som gis av området $D$. Hvordan en minstelønn ($w ̅$) påvirker sysselsettingen til en bedrift avhenger av hvilket nivå minstelønnen er på.
+
+Visst nivået på minstelønnen ($w ̅$) er større enn $w^m$ og mindre en $w^*$, får vi punktet $E$. Dersom bedriften ansetter mindre enn $L_1$, møter den et fullstendig elastisk arbeidstilbud. Det betyr at grensekostnadene ($MLC$) for å ansette arbeidskraft mellom $L=0$ og $L=L_1$ er lik minstelønnen ($w ̅$).
+
+![Monopsonibedrift - Minstelønn 1](Data/Monopsoni%20bedrift%20-%20minstelønn_1.PNG)
+
+Dersom bedriften ønsker å ansette mer arbeidskraft enn $L_1$, må bedriften gi alle ansatte høyere lønn, og dermed vil grensekostnaden ($MLC$) for å ansette mer arbeidskraft øke fra punkt $E$ til punkt $F$, og videre følge grensekostnads kurven for en monopsoni bedrift ($MLC$).
+
+![Monopsonibedrift - Grensekostnad](Data/Monopsoni%20bedrift%20-%20grensekostnad.PNG)
+
+Dersom bedriften ansetter mindre arbeidskraft enn fra punkt $L=0$ og punkt $L_1$ så er grenseinntekten ($MRP_L$) større enn grensekostnadene ($MLC$) som er lik minstelønnen ($w ̅$). Dersom bedriften ansetter flere enn punkt $L_1$ er grenseinntekten ($MRP_L$) mindre enn grensekostnadene ($MLC$) som er større enn minstelønnen ($w ̅$).
+
+Altså når grenseinntektene ($MRP_L$) er mindre enn grensekostnadene ($MLC$) taper bedriften penger, så det beste bedriften kan gjøre er å ansette $L_1$ arbeidskraft, for å oppnå så høy profitt som mulig.
+
+![Monopsonibedrift - Effektivitet](Data/Monopsoni%20bedrift%20-%20effektivitet.PNG)
+
+Fra figur 4 kan en se at arbeiderne som hadde jobb før minstelønnen ($w ̅$), har gått opp i lønn fra $w^m$ til $w ̅$, som er et overskudd som går til arbeiderne som tidligere gikk til monopsoni bedriften, representert med området $J$. Det er også en økning i antall arbeidere ($L$) som får jobb med minstelønnen ($w ̅$), representert med området $H$. En observerer også at monopsoni bedriften produserer mer representert ved området $G$. Det eksiterer fortsatt et effektivitetstap som visst i figur 1, men dette er blitt redusert. Dette effektivitetstapet kan elimineres ved å sette minstelønnen ($w ̅$) på et nivå som er svært nært eller likt som under fullkommen konkurranse ($w^*$).
+
+Dersom minstelønnen ($w ̅$) er større enn lønnen under fullkommen konkurranse ($w^*$) men lavere enn skjæringspunktet mellom etterspørsel på arbeid ($L^d (w)$) og grensekostnaden ($MLC$), altså punkt $A$, vil situasjonen være bedre enn under monopsoni, men dårligere enn under fullkommen konkurranse. I dette tilfellet har bedriften fullstendig elastisk arbeidstilbud fram til punktet $F$, illustrert i figur 5.
+
+![Monopsonibedrift - Minstelønn 2](Data/Monopsoni%20bedrift%20-%20minstelønn_2.PNG)
+
+I dette tilfellet kan bedriften profittmaksimering ved å sette grenseinntektene ($MRP_L$) lik grensekostnadene ($MLC$), som også er lik minstelønnen ($w ̅$), punktet $E$. En observerer da at mengden arbeidskraft ansatt er lik punktet $L_2$, altså at sysselsettingen er større en monopsoni, men mindre enn under fullkommen konkurranse. I dette tilfellet eksisterer det fortsatt et effektivitetstap, men er mindre enn det som er illustrert i figur 1.
+
+Dersom minstelønnen er høyere en punktet $A$, vil bedriften profittmaksimering ved å sette grenseinntektene ($MRP_L$) lik grensekostnadene ($MLC$), som også er lik minstelønnen ($w ̅$), punktet $E$. Da observerer en at bedriften vil ansette mindre arbeidskraft ($L_3$) enn under monopsoni ($L^m$). Effektivitetstapet vil også være større enn det som er illustrert i figur 1.
+
+![Monopsonibedrift - Minstelønn 3](Data/Monopsoni%20bedrift%20-%20minstelønn_3.PNG)
+
+**"Minstelønninger fører til mindre fattigdom"**.
+
+Fra figurene ovenfor kan en se at visst minstelønnen ($w ̅$) er større enn monopsonilønnen ($w^m$), men lavere eller lik lønnen under fullkommen konkurranse ($w^*$), så vil sysselsettingen ($L$) øke, arbeiderne vil få en høyere lønn ($w$) og effektiviteten vil øke. Dette vil føre til mindre fattigdom fordi flere er i arbeid med en høyere lønn. En fastsatt minstelønn vil også føre til at alle arbeidstakere får en rimelig lønn som muliggjør en anstendig levestander, og vil bidra til å redusere inntektsforskjellene.
+
+**"Minstelønninger fører til økt fattigdom"**.
+
+Fra figurene ovenfor kan en se at visst minstelønnen ($w ̅$) er større enn likevekts punktet ($A$) kan det øke fattigdommen fordi det er færre i arbeide, mens de som har arbeid har større lønn. I dette tilfellet vil også forskjellene i inntekt øke. Altså visst myndighetene setter en minstelønn som er høyere enn det markedet ville bestemt seg for, kan det føre til at arbeidsgivere ansetter færre, for å betale lønningene. Dette resulterer i høyere arbeidsledighet og dermed økt fattigdom. Uten en fast minstelønn kan man også risikere at arbeidsgiver gir arbeidstakere en urimelig lønn som ikke muliggjør en anstendig levestander.
+
+### Utfordring 2.1.2
+
+Nedenfor kan en se figur 7, som visualiserer sysselsetting i prosent på y-aksen og minstelønn i prosent av gjennomsnittlig bruttoinntekt på x-aksen, for befolkningen i forskjellige land i Europa, mellom alderen 20-64 år for året 2021. Det er også lagt inn en korrelasjonslinje (oransje) som viser sammenhengen mellom disse variablene. En observerer at korrelasjonen er ca. $-0.38$, noe som tilsvarer en svak negativ korrelasjon.
+
+```{r, warning = FALSE, message = FALSE}
+# Getting data on min. wage.
+min_wage <- get_eurostat("earn_mw_avgr2", time_format = "num")
+
+# Getting data on employment. 
+empl <- get_eurostat("lfsi_emp_a", time_format = "num")
+```
+
+```{r}
+# Cleaning data on min. wage.
+min_wage_clean <- min_wage %>%
+  filter(time == 2021,
+         nace_r2 == "B-S",
+         indic_se == "MMW_MEAN_ME_PP")
+
+# Removing "geo" that are not in empl.
+min_wage_clean <- subset(min_wage_clean, !(geo %in% c("AL", "ME")))
+```
+
+```{r}
+# Cleaning data on emplyment.
+empl_clean <- empl %>%
+  filter(age == "Y20-64",
+         time == 2021,
+         sex == "T",
+         unit == "PC_POP",
+         indic_em == "EMP_LFS")
+
+# Removing "geo" that are not in min_wage.
+empl_clean <- subset(empl_clean, !(geo %in% c("AT", "BE", "CH", "CY", "DK", 
+                                              "EA20", "EL", "EU27_2020", "FI",
+                                              "IE", "IS", "IT", "NO", "SE")))
+```
+
+```{r}
+# Renaming columns and selecting the values i need before merge.
+empl_clean <- empl_clean %>%
+  rename(values_empl = values) %>%
+  select(geo, values_empl)
+
+# Renaming columns and selecting the values i need before merge.
+min_wage_clean <- min_wage_clean %>%
+  rename(values_min = values) %>%
+  select(geo, values_min)
+
+# Merging dataframes for easier use.
+df_01 <- merge(min_wage_clean, empl_clean)
+
+# Finding the correalation
+#### cor(df_01$values_min, df_01$values_empl)
+#### Output: -0.3835417
+```
+
+```{r, warning = FALSE, message = FALSE}
+# Creating figure.
+fig_01 <- ggplot(data = df_01, aes(x = values_min, y = values_empl)) +
+  geom_point(color = "#00A19B") +
+  geom_smooth(method = lm, se = FALSE, color = "#FF8000", linewidth = 1) +
+  annotate("text", x = 51, y = 71.5, label = "-0.38", color = "#FF8000") +
+  xlim(39, 52) +
+  ylim(65, 84) +
+  labs(title = "Figur 7: sysselsetting og minstelønn",
+       x = "Minstelønn, prosent av gj.snitt bruttoinntekt",
+       y = "Sysselsetting (%)",
+       caption = "Kilde: Eurostat") +
+  geom_label_repel(aes(label = geo),
+                   box.padding = 0.35,
+                   point.padding = 0.5,
+                   segment.color = "grey50",
+                   max.overlaps = 3) +
+  theme_mod_v1()
+
+# Showing figure.
+fig_01
+```
+
+Korrelasjonslinjen i figur 7 antyder at høyere minstelønn fører til lavere sysselsetting, altså påstanden «minstelønninger fører til økt fattigdom» fra utfordring 2.1.1. Men det er ikke nødvendigvis årsakssammenheng (kausal sammenheng) mellom disse variablene.
+
+Det kan være flere variabler utenfor modellen som påvirker både minstelønn og sysselsettingen samtidig, altså konfunderende variabler (en variabel som er assosiert både med påvirkningsfaktorene og utfallet). Noen eksempler på konfunderende variabler i denne sammenhengen kan være: utdanningsnivå, teknologi, generell økonomisk situasjon og arbeidsmarkeder. Disse uobserverte variablene kan forklare den observerte korrelasjonen. Fra figur 7 observerer en at det er fire land som skiller seg ut (HR, RO, RS, ES), disse fire vil påvirke korrelasjonen i større grad enn de som ligger nærmere linje. Det er mulig at i 2021 opplevde disse landene andre økonomiske utfordringer som førte til lav sysselsetting, og i et forsøk på å øke levestandarden til arbeidstakerne, økte landet minstelønnen.
+
+Det er flere metoder som kan hjelpe å identifisere kausale effekter. Den «rasketes» metoden i denne sammenhengen ville vært å observere den samme dataen fra tidligere år, og se om det er en sterkere eller svakere korrelasjon. Observerer man data fra lang nokk tid vil det fjerne momenter som økonomisk ustabilitet og man ville observert et mer «normalt» nivå for hvert land, uavhengig av landets økonomiske situasjon i perioder (konjunkturer). En annen mer krevende metode ville vært å dele befolkningen inn i grupper. En gruppe som blir påvirket av nivået på minstelønnen og en gruppe som ikke blir påvirket, deretter observere nivået på sysselsettingen i de to gruppene. Dersom man observerer en forskjell, vil minstelønn sannsynligvis ha innvirkning på sysselsetting. Dersom man ikke observerer en forskjell, vil det sannsynligvis være andre variabler som påvirker. For å avgjøre om det er årsakssammenheng (kausal sammenheng) mellom nivået på minstelønn og sysselsetting kreves det mer omfattende analyser.
+
+# Utfordring 2.2
+
+### Utfordring 2.2.1
+
+I denne oppgaven skal økonomisk teori og grafisk analyse benyttes til å gi intuisjon til påstanden «Sterke fagforeninger reduserer velferden».
+
+Før en kan diskutere om «sterke fagforeninger reduserer velferden» må en forstå hvordan fagforeninger påvirker arbeidsmarkedet. Figur 8 nedenfor inneholder tilbud på arbeid ($L^s (s)$) og etterspørsel på arbeid ($L^d (w)$) ved ulike lønnsnivåer. Nytten til fagforeningene er gitt ved nytten til medlemmene. Nytten til medlemmene avhenger av lønn og sysselsetting, modellen for dette vil ikke bli visualisert i denne besvarelsen.
+
+![Fagforeningens påvirkning av arbeidskraft](Data/Fagforening.PNG){width="337"}
+
+Ved lønnen $w^*$ og arbeidskraften $L^*$, altså likevekstpunktet $C$ er det ingen arbeidsledighet. Dette er den optimale situasjonen hvor det ikke eksisterer overskudd av arbeidstakere eller arbeidsgivere.
+
+Dersom fagforeningen forhandler frem en lønn lik $w_2$ vil det føre til at lønnen ($w$) overstiger likevektsnivået. Dette vil medføre at arbeidsgivere ikke er villig til å ansette like mange som før lønnsøkningen, siden arbeidskraften er blitt dyrere ($L_2<L^*$). Differansen mellom likevekts punktet og det nye etterspørselen på arbeidskraft representerer arbeidsledigheten. Siden fagforeningen har forhandlet en såpass høy lønn, vil ikke selskaper være villig til å betale arbeidstakere, og arbeidsledigheten øker. 
+
+Dersom fagforeningen forhandler frem en lønn lik $w_1$ vil det føre til at lønnen ($w$) legger seg på en nivå som er lavere en likevektsnivået, noe som kan redusere velferden for arbeidstakerne og de kan ha en høyere reservasjonslønn eller en preferanse for fritid som overgår dette lønnsnivået. Dette vil medføre at arbeidsgiver er villig til å betale flere for å arbeide siden kostnaden for arbeid er blitt billigere ($L_1>L^*$). Dersom fagforeningen forhandler en såpass lav lønn, vil selskaper være mer en villig til å betale lønnen, men færre vil være villig til å søke arbeid. 
+
+Denne modellen er bare en forenkling av virkeligheten, gjennom mer komplekse modeller vil en sannsynligvis se at ved lavere lønninger ($w_1$) ansetter selskaper flere og arbeidsledigheten ikke går like mye ned, men nytten til individer synker. Samtidig som ved høyere lønninger ($w_2$) vil selskapet ansette færre, men mer kvalifisert (dyrere) arbeidskraft, og øke effektiviteten til selskapet.
+
+**"Sterke fagforeninger reduserer velferden".**
+
+Som en observerer fra figur 8 vil en sterk fagforening kunne forhandle frem en høyere lønn, noe som kan resultere i høyere arbeidsledighet, fordi selskaper ikke er villig til å betale denne lønne, og ansette mindre arbeidskraft, som vil redusere velferden. Høyere lønninger kan påvirke bedrifters produktivitet og internasjonale konkurranseevne, som igjen kan føre til tap av arbeidsplasser og økonomisk gevinst. Avslutningsvis kan det være verdt å nevne at en sterke fagforening også vil kunne føre til hyppigere og lengere streiker, som igjen vil påvirke selskaper og samfunnet negativt over tid.
+
+### Utfordring 2.2.2
+
+Figurene nedenfor (9 og 10) inneholder data på organisasjonsgraden i fagforeninger på x-aksen og arbeidsledighetsraten på y-aksen, i forskjellige europeiske land totalt for begge kjønn i 2018. Det er også lagt inn en korrelasjonslinje (oransje) som viser sammenhengen mellom disse variablene. Forskjellen mellom figurene er om dataen gjelder for innenlands fødte (NB) eller utenlandsfødte (FB).
+
+```{r}
+# Getting data on union density.
+uniden <- get_dataset("TUD")
+
+# Selecting the data i need and filtering for the year 2018.
+uniden_2018 <- uniden %>%
+  filter(Time == 2018) %>%
+  select(LOCATION, ObsValue)
+```
+
+```{r}
+# Getting data on unemplyment.
+unemp <- get_dataset("MIG_NUP_RATES_GENDER")
+
+# Filtering for the year 2018.
+unemp_2018 <- unemp %>%
+  filter(Time == 2018, GENDER == "TOT", RATE == "U_RATE")
+
+# Spliting dataframe into FB and NB.
+unemp_fb <- unemp_2018[unemp_2018$BIRTH == "FB", ]
+unemp_nb <- unemp_2018[unemp_2018$BIRTH == "NB", ]
+
+# Removing country not present in both data frames.
+unemp_nb <- subset(unemp_nb, !(COUNTRY %in% c("SVK")))
+```
+
+```{r}
+# Renaming before merge.
+uniden_2018 <- uniden_2018 %>%
+  rename(uniden_value = ObsValue,
+         COUNTRY = LOCATION)
+
+unemp_fb <- unemp_fb %>%
+  rename(fb_value = ObsValue)
+
+unemp_nb <- unemp_nb %>%
+  rename(nb_value = ObsValue)
+
+# Selecting the varlues i need.
+unemp_fb <- unemp_fb %>%
+  select(COUNTRY, fb_value)
+
+unemp_nb <- unemp_nb %>%
+  select(COUNTRY, nb_value)
+```
+
+```{r}
+# Merging all dataframes for easier use.
+df_02 <- merge(uniden_2018, unemp_fb)
+df_03 <- merge(df_02, unemp_nb)
+
+# Transforming values from chr (character) to num (numeric).
+df_03 <- df_03 %>%
+  transform(df_03, uniden_value = as.numeric(uniden_value)) %>%
+  transform(df_03, fb_value = as.numeric(fb_value)) %>%
+  transform(df_03, nb_value = as.numeric(nb_value))
+
+# Finding the correlation.
+#### cor(df_03$uniden_value, df_03$fb_value)
+#### output: 0.2738582
+#### cor(df_03$uniden_value, df_03$nb_value)
+#### output: -0.208941
+```
+
+```{r, warning = FALSE, message = FALSE}
+# Creating figure.
+fig_02 <- ggplot(data = df_03, aes(x = uniden_value, y = fb_value)) +
+  geom_point(color = "#00A19B") +
+  geom_smooth(method = lm, se = FALSE, color = "#FF8000", linewidth = 1) +
+  annotate("text", x = 80, y = 10, label = "+0.27", color = "#FF8000") +
+  labs(title = "Figur 9: org.graden og arbeidsledighet (FB)",
+       x = "Organisasjonsgrad",
+       y = "Arbeidsledighet (%)",
+       caption = "Kilde: OECD") +
+  geom_label_repel(aes(label = COUNTRY),
+                   box.padding = 0.35,
+                   point.padding = 0.5,
+                   segment.color = "grey50",
+                   max.overlaps = 3) +
+  theme_mod_v1()
+
+# Showing figure.
+fig_02
+```
+
+Fra figur 9 kan en se at det er en svak positiv korrelasjon (ca. $0.27$) mellom organisasjonsgraden og arbeidsledighetsraten for utenlandsfødte (FB).
+
+```{r, warning = FALSE, message = FALSE}
+# Creating figure.
+fig_03 <- ggplot(data = df_03, aes(x = uniden_value, y = nb_value)) +
+  geom_point(color = "#00A19B") +
+  geom_smooth(method = lm, se = FALSE, color = "#FF8000", linewidth = 1) +
+  annotate("text", x = 80, y = 4.5, label = "-0.20", color = "#FF8000") +
+  labs(title = "Figur 10: org.graden og arbeidsledighet (NB)",
+       x = "Organisasjonsgrad",
+       y = "Arbeidsledighet (%)",
+       caption = "Kilde: OECD") +
+  geom_label_repel(aes(label = COUNTRY),
+                   box.padding = 0.35,
+                   point.padding = 0.5,
+                   segment.color = "grey50",
+                   max.overlaps = 3) +
+  theme_mod_v1()
+
+# Showing figure.
+fig_03
+```
+
+Fra figur 10 kan en se at det er en svak negativ korrelasjon (ca. $-0.20$) mellom organisasjonsgraden og arbeidsledighetsraten for innenlands fødte (NB).
+
+Fra figurene ovenfor (9 og 10) ser en at blant innenlands fødte (NB) antyder korrelasjonen at høyere organisasjonsgrad fører til lavere arbeidsledighet, og vice versa for utenlandsfødte (FB), altså høyere organisasjonsgrad, høyere arbeidsledighet. Høy organisasjonsgrad indikerer at fagforeningene har større makt og innflytelse på arbeidsmarkedet. Dette betyr at fagforeningene kan forhandle høyere lønn, bedre arbeidsforhold og generelt bedre vilkår for medlemmene sine. Hvis fagforeningene er sterke og har en høy grad av organisering blant innenlands fødte (NB) arbeidstakere, har de større evne til å forhandle frem bedre vilkår. Dette kan inkludere lavere arbeidsledighet, gjennom høyere lønninger og mer stabile jobber som reduserer behovet for å søke ny jobb, noe som kan redusere arbeidsledigheten.
+
+Når vi inkluderer både innenlands fødte (NB) og utenlandsfødte (FB) er det viktig å vurdere sammensetningen av medlemsbasen. Utenlands fødte (FB) kan ha forskjellige behov og prioriteringer sammenlignet med innenlands fødte (NB). De kan være mer sårbare for usikkerhet i jobben, diskriminering og lavere lønn grunnet språkbarrierer, manglende utdannelse eller manglende kjennskap til arbeidsmarkedet. Disse ulike forutsetningene kan gjøre det vanskelig for fagforeningene å forhandle på vegne av begge gruppene, siden behovene kan være svært forskjellige.
+
+En av grunnene til at vi ser at høyere organisasjonsgrad gir høyere arbeidsledighet blant utenlands fødte (FB), kan være at fagforeningens forhandlinger for bedre vilkår for denne gruppen, kan føre til økte kostnader for arbeidsgiver, som deretter reduserer antall utenlands fødte (FB) ansatte eller velger å investere i automatisering (teknologi) for å kutte kostnader, noe som kan øke arbeidsledigheten for lavt utdannede individer.
+
+Det er viktig å påpeke at korrelasjonene i figurene ovenfor er svak, og det er ikke nødvendigvis årsakssammenheng mellom variablene, ref. utfordring 2.1.2.
+
+# Referanseliste
+
+Boeri T. & Van Ours J. (2013). *The Economics of Imperfect Labor Markets: Second Edition.* Princeton University Press.
+
+Mannberg, A. (2022, 15. september). *SOK-2008: Monopsoni og minstelønn* \[Video\]. YouTube. <https://www.youtube.com/watch?v=RNvWEqEYPs4>
+
+Mannberg, A. (2022, 29. august). *SOK-2008 - Fagforeningsmonopol* \[Video\]. Youtube. <https://www.youtube.com/watch?v=8DlLYuSlUCE>
+
+Eurostat. (2023, 21. juni). *Monthly minimum wage as a proportion of average monthly earnings (%) - NACE Rev 2. (from 2008 onwards).* Hentet 20.10.2023 fra <https://ec.europa.eu/eurostat/web/products-datasets/-/earn_mw_avgr2>
+
+Eurostat. (2023, 20. juni). *Employment and activity by sex and age - annual data.* Hentet 20.10.2023 fra <https://ec.europa.eu/eurostat/web/products-datasets/-/lfsi_emp_a>
+
+OECD. (2023, 03. oktober). *Employment, unemployment, and participation rates by place of birth and sex.* Hentet 20.10.2023 fra <https://stats.oecd.org/Index.aspx?DataSetCode=MIG_NUP_RATES_GENDER>
+
+OECD. (2023, 03. oktober). *Trade Union Dataset.* Hentet 20.10.2023 fra <https://stats.oecd.org/Index.aspx?DataSetCode=TUD>
