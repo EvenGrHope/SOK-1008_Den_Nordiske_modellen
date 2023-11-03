@@ -1,0 +1,346 @@
+---
+title: "05_sok_2008_h23_utf3"
+author: "05"
+date: last-modified
+date-format: iso
+execute:
+  echo: FALSE
+  warning: FALSE
+format:
+  pdf:
+    fig-pos: "H"
+editor: visual
+---
+
+# Apendiks
+
+Denne besvarelsen er gjennomført uten bruk av kunstig inteligens.
+
+```{r, warning = FALSE}
+# Clering the environment.
+rm(list=ls())
+
+# Loading packages.
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(rjstat)
+  library(janitor)
+  library(readr)
+  library(eurostat)
+  library(knitr)
+  library(httr)
+  library(ggrepel)
+  library(OECD)
+  })
+```
+
+```{r}
+# Define custom theme function.
+theme_mod_v1 <- function() {
+  theme_minimal() +
+    theme(
+      plot.background = element_rect(fill = "white", color = NA),
+      plot.margin = unit(c(5, 10, 5, 10), units = "mm"),
+      plot.title = element_text(face = "bold.italic", color = "gray10"),
+      axis.title = element_text(face = "bold", color = "gray10"),
+      axis.text = element_text(color = "gray10"),
+      legend.text = element_text(color = "gray10"),
+      legend.title = element_text(face = "bold", color = "gray10"),
+      panel.grid = element_line(color = "gray80")
+    ) }
+```
+
+# Utfordring 3.1.1
+
+I denne oppgaven skal en se nærmere på Tone sin reservasjonslønn med og uten stønad.\
+Tones nytte er sammensatt av konsum ($c$) og fritid ($l$), nyttefunksjonen til Tone er av typen Cobb-Douglas og ser slik ut: $U(c,l) = c^\theta \times l^{1-\theta}$, der $\theta = 0.5$.
+
+Tone har en arbeidsfri inntekt ($m$) lik 100 (i ti-tall kroner). Hun kan ikke velge sin arbeidstid fritt. Dersom Tone jobber, må hun jobbe 40 timer per uke. Hun kan maksimalt jobbe 60 timer per uke ($l_0 = 60$). Dersom tone ikke tar en jobb, har hun tilgang til stønad. En antar at arbeidsmarkedet er «perfekt». Oppgaven skal utlede Tine sin reservasjonslønn i disse to situasjonene:
+
+1.  Stønaden er lik null
+2.  Stønaden er lik 100
+
+Den statiske reservasjonslønnen er den lønnen hvor et arbeidsledig individet er indifferent mellom å jobbe litt eller å ikke jobbe, altså minstelønnen man krever for å jobbe. Det finnes også en dynamisk reservasjonslønn, men denne oppgaven vil ta utgangspunkt i den statiske.
+
+Tones reservasjonslønn finner en når nytten mellom fulltidsjobb (40 timer) og det å ikke jobbe noe (0 timer) er lik, altså når individet er indifferent mellom å jobbe og ikke jobbe.\
+Tones reservasjonslønn hvor stønad er lik null ($b = 0$):
+
+(1) $(m+w^r×h)^{0.5}×(l_0-h)^{0.5}=(m+b)^{0.5}×(l_0 )^{0.5}$\
+(2) $ml_0-mh+hw^r l_0-h^2 w^r=ml_0+bl_0$\
+(3) $-mh+hw^r l_0-h^2 w^r=bl_0$\
+(4) $(-100×40)+(40×w^r×60)-(40^2×w^r )=0×60$\
+(5) $-4000+2400w^r-1600w^r=0$\
+(6) $800w^r=4000$\
+(7) $\frac{800w^r}{800}=\frac{4000}{800}$\
+(8) $w^r= 5$
+
+Videre kan en benytte denne reservasjonslønnen til å finne Tones maksimale konsum (skjæringspunktet), gitt dette lønnsnivået:
+
+(1) $m+w×h=c$\
+(2) $100+5×60=400$
+
+En vet at Tone må jobbe 40 timer dersom hun jobber og dette gir konsum ($c$) lik:
+
+(1) $m+w×h=c$\
+(2) $100+5×40=300$
+
+Dersom Tone velger å ikke jobbe i denne situasjonen får hun konsum ($c$) lik:
+
+(1) $m+b=c$\
+(2) $100+0=100$
+
+Nedenfor kan en se dette visualisert:
+
+```{r, warning = FALSE, message = FALSE}
+
+# Defining a intervall and creating a dataframe.
+l_01 <- seq(0, 60, by = 0.1)
+df_01 <- data.frame(l_01)
+
+# Creating base figure.
+axes_01 <- ggplot(df_01, aes(l_01)) +
+  labs(x = "Fritid (l)", y = "Konsum (c)") +
+  coord_fixed(ratio = 1) +
+  scale_x_continuous(limits = c(0,70), expand = c(0,0)) +
+  scale_y_continuous(limits = c(0, 1000), expand = c(0,0)) +
+  coord_fixed(ratio = (70-0) / (1000-0)) +
+  theme_mod_v1()
+  
+# Defining indifference curve function.
+i_0 = function(l_01) (78^2)/(l_01)
+i_1 = function(l_01) (110^2)/(l_01)
+
+# Defining reservation salary function.
+wr0 <- function(l_01) {
+  return(400-5*l_01)
+}
+
+wr1 <- function(l_01) {
+  return(850-12.5*l_01)
+}
+
+# Creating figure (b = 0).
+fig_01 <- axes_01 +
+  stat_function(df_01,
+                fun = i_0,
+                mapping = aes(), 
+                color = "#34BD4A") +
+  stat_function(df_01,
+                fun = i_1,
+                mapping = aes(),
+                color = "#34BD4A") +
+  annotate("text",
+           x = 65, y = 120,
+           label = expression(u[0])) +
+  annotate("text",
+           x = 65, y = 230,
+           label = expression(u[1])) +
+  geom_segment(aes(x = 0, y = wr0(0), xend = 60, yend = wr0(60)), 
+               color = "#FF8000") +
+  geom_segment(aes(x = 60, y = 0, xend = 60, yend = 100), 
+               linetype = "dashed", color = "#FF0000") +
+  geom_segment(aes(x = 0, y = 100, xend = 60, yend = 100), 
+               linetype = "dashed", color = "#FF0000") +
+  geom_segment(aes(x = 20, y = 0, xend = 20, yend = 300),
+               linetype = "dashed", color = "#FF0000") +
+  geom_segment(aes(x = 0, y = 300, xend = 20, yend = 300),
+               linetype = "dashed", color = "#FF0000") +
+  annotate("text",x=10,y=400, 
+           label=expression(-w^r)) +
+  labs(title = "Reservasjonslønn (b = 0)")
+
+# Showing figure. 
+fig_01
+
+# Source: Forelesningsnotater
+```
+
+Fra figuren kan en se at reservasjonslønnen til Tone gir samme nytte ($U_0$) dersom hun velger å jobbe (40 timer) eller å ikke jobbe (0 timer), Tone er altså indifferent mellom disse to valgene. Dersom Tone kunne velge arbeidstiden selv, observerer en at Tone kan oppnå høyere nytte dersom hun jobber ca. 20 timer.
+
+Tones reservasjonslønn hvor stønad er lik hundre ($b = 100$):
+
+(1) $(m+w^r×h)^{0.5}×(l_0-h)^{0.5}=(m+b)^{0.5}×(l_0 )^{0.5}$\
+(2) $ml_0-mh+hw^r l_0-h^2 w^r=ml_0+bl_0$\
+(3) $-mh+hw^r l_0-h^2 w^r=bl_0$\
+(4) $(-100×40)+(40×w^r×60)-(40^2×w^r)=100×60$\
+(5) $-4000+2400w^r-1600w^r=6000$\
+(6) $800w^r=4000+6000$\
+(7) $\frac{800w^r}{800}=\frac{10000}{800}$\
+(8) $w^r= 12.5$
+
+Videre kan en benytte denne reservasjonslønnen til å finne Tones maksimale konsum (skjæringspunktet), gitt dette lønnsnivået:
+
+(1) $m+w×h=c$\
+(2) $100+12.5×60=850$
+
+En vet at Tone må jobbe 40 timer dersom hun jobber og dette gir konsum ($c$) lik:
+
+(1) $m+w×h=c$\
+(2) $100+12.5×40=600$
+
+Dersom Tone velger å ikke jobbe i denne situasjonen får hun konsum ($c$) lik: (1) $m+b=c$ (2) $100+100=200$
+
+Nedenfor kan en se dette visualisert:
+
+```{r, message = FALSE, warning = FALSE}
+
+# Creating figure (b = 100).
+fig_02 <- axes_01 +
+  stat_function(df_01,
+                fun = i_0,
+                mapping = aes(),
+                color = "#34BD4A") +
+  stat_function(df_01,
+                fun = i_1,
+                mapping = aes(),
+                color = "#34BD4A") +
+  annotate("text",
+           x = 65, y = 120,
+           label = expression(u[0])) +
+  annotate("text",
+           x = 65, y = 230,
+           label = expression(u[1])) +
+  geom_segment(aes(x = 0, y = wr1(0), xend = 60, yend = wr1(60)), 
+               color = "#FF8000") +
+  geom_segment(aes(x = 60, y = 0, xend = 60, yend = 200), 
+               linetype = "dashed", color = "#FF0000") +
+  geom_segment(aes(x = 0, y = 200, xend = 60, yend = 200), 
+               linetype = "dashed", color = "#FF0000") +
+  geom_segment(aes(x = 20, y = 0, xend = 20, yend = 600),
+               linetype = "dashed", color = "#FF0000") +
+  geom_segment(aes(x = 0, y = 600, xend = 20, yend = 600),
+               linetype = "dashed", color = "#FF0000") +
+  annotate("text",x = 40,y = 450, 
+           label=expression(-w^r)) +
+  labs(title = "Reservasjonslønn (b = 100)")
+
+# Shwoing figure.
+fig_02
+
+# Source: Forelesningsnotater
+```
+
+Fra figuren ovenfor kan en se at reservasjonslønnen til Tone har blitt høyere med stønader, i forhold til uten. Dersom Tone ikke velger å jobbe og dermed motta stønad vil hun komme på ett høyere nyttenivå ($U_1$) i forhold til uten stønad ($U_0$). Dette fører til at reservasjonslønnen til Tone øker, hun må altså få høyere lønn (økt reservasjonslønn) for å oppnå samme nyttenivå med jobb (40 timer), som uten jobb (0 timer). Også i denne situasjonen kunne Tone oppnådd et høyere nyttenivå dersom hun fikk velge arbeidstid selv, ca. 25 timer.
+
+# Utfordring 3.1.2
+
+Trygd er en offentlig forsikring, ofte obligatorisk, som enten skal sikre den trygdede økonomisk dekning for ekstraordinære utgiftsbehov, for eksempel til behandling av sykdom, eller gi kompensasjon for tap av inntekt i nærmere bestemme situasjoner, for eksempel ved sykdom, uførhet, yrkesskade, alderdom, arbeidsløshet og tap av forsørger (Pedersen, 2021).
+
+Arbeidsmarkedet er det samlede tilbud av, og etterspørsel etter arbeidskraft innen et geografisk område (Barth, 2022). Et ufullkomment arbeidsmarked preges av asymmetrisk (ikke symmetrisk) informasjon, monopoler, inntektsulikhet og arbeidsledighet.
+
+Trygd på et slikt arbeidsmarked vil først og fremst bidra til å redusere fattigdom og ulikhetene i samfunnet. Trygden vil hjelpe individer som er arbeidsledige eller lavt lønnede til å dekke sine mest grunnleggende behov, noe som vil øke levestandarden for disse individene. På den andre siden kan trygd føre til lavere insentiver til å jobbe, blant personer som ellers ville jobbet. Visst individer som jobber oppnår en høyere nytte av å slutte å jobbe, og motta trygd, vil dette svekke arbeidstilbudet og arbeidsledigheten øker. Trygdeytelser kan også gi økt økonomisk stabilitet i det området det gjelder. Lavkonjunkturer i økonomien, når arbeidsledigheten øker, kan stabiliseres, der trygder bidra til å stabilisere individers inntekt og opprettholde ett viss nivå på levestandarden for de som blir påvirket, noe som kan redusere alvorlighetsgraden i resesjonen.
+
+# Utfordring 3.2.1
+
+## Oppgave a)
+
+```{r}
+# Loading data (SSB Table 12441).
+url_01 <- "https://data.ssb.no/api/v0/no/table/12441/"
+
+query_01 <- '{
+  "query": [
+    {
+      "code": "Kjonn",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "0"
+        ]
+      }
+    },
+    {
+      "code": "NACE2007",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "10-33"
+        ]
+      }
+    },
+    {
+      "code": "Sykefraver2",
+      "selection": {
+        "filter": "item",
+        "values": [
+          "E"
+        ]
+      }
+    }
+  ],
+  "response": {
+    "format": "json-stat2"
+  }
+}'
+
+# Creating dataframe (SSB Table 12441).
+get_index_01 <- url_01 %>%
+  POST(body = query_01, encode = "json")
+
+df_01 <- get_index_01 %>%
+  content("text") %>%
+  fromJSONstat() %>%
+  as_tibble()
+```
+
+```{r}
+# Creating figure.
+fig_01 <- ggplot(df_01, aes(x = år, y = value)) +
+  geom_line(group = 1, color = "#FF8000", linewidth = 1) +
+  labs(title = "Egenmeldinger, begge kjønn, industri, 2001-2022",
+       x = " ", y = "Egenmelding fravær (%)", 
+       caption = "Kilde: SSB (12441)") +
+  theme_mod_v1() +
+  theme(axis.text.x = element_text(angle = 70, vjust = 1, hjust = 1))
+
+# Showing figure.
+fig_01
+```
+
+Fra figuren ovenfor kan en sykefraværsprosenten med bruk av egenmelding på y-aksen og årstallene fra 2001 til 2022 på x-aksen, for begge kjønn i industrisektoren. En observerer en økning fra 2001 til 2022, med noen unntak i 2003, 2010 og 2019. Etter nedgangen i 2019 ser en at sykefraværet ved bruk av egenmelding har gått relativt mye opp i forhold til resten av modellen.
+
+Det kan være flere årsaker til at man ser en økning gjennom perioden, som for eksempel endringer i arbeidsforhold, aldrende arbeidsstyrke, endringer i trygdeordninger, osv. For å bestemme årsakssammenheng til hvorfor en observerer en økning kreves det mer og forskjellig data.
+
+## Oppgave b)
+
+Disinsentivproblemet i sangen handler om at arbeidstaker utnytter den delen av arbeidsavtalen som omhandler sykedager ved bruk av egenmelding (inntil 3 dager), uten å være syk. Egenmelding betyr at du melder fra til arbeidsgiveren om at du er syk, uten å levere sykemelding (NAV, 2023). Fra arbeidsgivers perspektiv forventes det at egenmelding kun benyttes når en faktisk er syk. Mens fra arbeidstakers perspektiv vil en benytte seg av disse egenmeldingsdagene selv om en ikke er syk, dersom konsekvensene eller kontrollen for å benytte seg av disse ikke er tilstrekkelig.
+
+Når arbeidstakeren bruker egenmelding uten å være syk, vil dette føre til kostnader for arbeidsgiver først å fremst som lønnskostnader uten at arbeidet blir gjort, men også f.eks. redusert produktivitet, innleid arbeidskraft og økt belastning på kollegaer.
+
+Dersom en antar at et individ kun får høyere nytte av økende konsum ($c$) og fritid ($l$) kan valget til individet ved bruk av egenmelding visualiseres slik:
+
+![](Data/egenmelding_01.png)
+
+På figuren ovenfor kan en se konsum ($c$) på y-aksen og fritid ($l$) på x-aksen. Figuren viser punktet $A$ som representerer individet i fulltids jobb, da vil individet ha en nytte lik $U_1$, konsum lik $c^1$ og fritid lik $l_1$. Dersom individet velger å benytte seg av egenmelding, vil konsumet ($c$) forbli uendret (siden en får samme lønn ved bruk av egenmelding), mens fritiden ($l$) vil øke til $l_0$ de dagene det gjelder, noe som vil løfte individet opp på nyttenivå $U_2$. Individet i denne modellen vil alltid tilpasses seg der den opplever høyest nytte, altså velge å benytte seg av egenmelding for å øke nytten.
+
+Hvor høy grad av trivsel vil også kunne påvirke bruke av egenmelding. Der lav grad av trivsel på arbeidsplassen vil gi arbeidstaker større incentiver til å bruke egenmelding, samtidig som høy grad av trivsel vil gi arbeidstaker lavere incentiver til å benytte egenmelding. Det er gjennomført studier som viser at ansatte med høy trivsel oftere møter syke på jobb, enn ansatte med lavere trivsel (Stranden, 2015).
+
+## Oppgave c)
+
+En mulig løsning på disinsentivproblemet i sangen er å senke hvor mye en får kompensert for å benytte egenmelding, altså istedenfor å få utbetalt sin vanlige lønn, får individet et fast beløp eller prosent andel av sin faste lønn. Dette vil påføre individet som benytter egenmelding et større økonomisk tap, og dermed lavere konsum ($c$), istedenfor at konsum forblir uendret. Dette er visualisert nedenfor:
+
+![](Data/egenmelding_02.png){width="633"}
+
+Figuren ovenfor viser det samme som i oppgave b, med unntak av budsjettbetingelsen når en benytter sykemelding. Denne figuren viser en lavere kompensasjonsgrad, hvor punkt A representerer full jobb, mens punkt $B$ viser et individet som benytter egenmelding. Individets nytte vil fortsatt øke noe, men ikke like mye som i oppgave $b$. Individet vil fortsatt ha fritid lik $l_0$ ved bruk av egenmelding, men konsumet vil gå ned til $c_2$. Et mulig problem med denne løsningen er at personer som faktisk er syke og ikke burde jobbe, likevel går på jobb for å unngå inntektstapet.
+
+En annen mulig løsning på disinsentivproblemet er økende grad av disiplinering fra arbeidsgiver, også kjent som disiplineringseffekten. Disiplineringseffekten går ut på hvordan forhold arbeidsgiver og arbeidstaker har til sykefravær, hvor arbeidsgiver kan oppleve at sykepenger kan øke sykefraværet blant arbeidstakerne, noe som anses som negativt. Arbeidstaker vil dermed føle på et behov for å arbeids uansett om en er syk eller ikke. Disiplineringseffekten virker sterkes når arbeidsledigheten er høy, ettersom at høy ledighet kan øke sannsynligheten for å miste jobben og gjør det vanskeligere å finne nytt arbeid. Det blir altså større konsekvenser enn når det er lav ledighet. Samtidig som at dette vil hindre friske fra å være borte fra jobben, vil det også i dette tilfellet gå utover de som faktisk er syke og ikke burde jobbe, fordi de ikke ønske å bli sett på som en som utnytter egenmeldings ordningen, fra arbeidsgivers perspektiv.
+
+En annen mulighet som nevnt i oppgave b, er å forsøke å øke trivselen til de individene det gjelder, gjennom f.eks. organisasjoners kultur. Fra et samfunnsøkonomisk perspektiv kan dette innebære økt støtte til næringene slik at de kan legge til rette for bedre kultur, dermed økende trivsel, og avtagende bruk av egenmeldinger for de som ikke er syke.
+
+# Referanseliste
+
+Barth, E. (2022, 3. august). *Arbeidsmarked*. SNL. Hentet 24.10.2023 fra <https://snl.no/arbeidsmarked>
+
+Boeri T. & Van Ours J. (2013). *The Economics of Imperfect Labor Markets: Second Edition.* Princeton University Press.
+
+Gatas Parlament. (2001). *Tredagern*. Genius. Hentet 24.10.2023 fra <https://genius.com/Gatas-parlament-tredagern-lyrics>
+
+Mannberg, A. (2022, 7. november). *SOK-2008: Arbeidsledighetseratatning \[video\].* Youtube. Hentet 24.10.2023 fra <https://www.youtube.com/watch?v=PIK38cpDgOY>
+
+NAV. (2023, 15. september). *Egenmelding.* Hentet 31.10.2023 fra <https://www.nav.no/egenmelding>
+
+Pedersen, A. W. (2021, 9. januar). *Trygd*. SNL. Hentet 24.10.2023 fra <https://snl.no/trygd>
+
+Stranden, A. L. (2015, 13. november). *Derfor går syke ansatte på jobb.* Forskning.no. Hentet 31.10.2023 fra <https://forskning.no/organisasjonspsykologi-arbeid-bedriftsokonomi/derfor-gar-syke-ansatte-pa-jobb/459018>
+
+SSB. (2023, 2. mars). *12441: Nærings- (17 grupper) og sykefraværstype fordelt (egen- og legemeldt) sykefravær (årstall) 2021 - 2022.* Hentet 24.10.2023 fra <https://www.ssb.no/statbank/table/12441/>
